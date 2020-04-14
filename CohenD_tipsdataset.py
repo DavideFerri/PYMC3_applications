@@ -54,5 +54,31 @@ with model:
     # print a summary of the results
     log.info("The summary of the posterior is : %s", az.summary(trace))
     az.plot_trace(trace)
-
+    
+# ------------------- plot the difference between the posterior means and std ------------------------------- # 
+    
+with model: 
+    # initialize a normal variable 
+    dist = ss.norm()
+    # initialize a plot with 3times2 figures
+    _,ax = plt.subplots(3,2,figsize=(14,8), constrained_layout = True)
+    # get the combinations of elements to be compared
+    comparisons = [(i,j) for i in range(4) for j in range (i+1,4)]
+    pos = [(k,l) for k in range(3) for l in (0,1)]
+    # iterate over the elements to be compared and the graph positions 
+    for (i,j),(k,l) in zip(comparisons,pos):
+        # get the difference between the draws from the posterior 
+        means_diff = trace["mu"][:,i] - trace["mu"][:,j]
+        # get the D_cohen for each draw from the posterior and then get the mean
+        d_cohen = (means_diff/np.sqrt((trace["sigma"][:,i]**2 + trace["sigma"][:,j]**2)/2)).mean()
+        # get the probability of superiority 
+        ps = dist.cdf(d_cohen/(2**0.5))
+        az.plot_posterior(means_diff,ref_val = 0, ax = ax[k,l])
+        # set the graph title
+        ax[k,l].set_title(f"$\mu_{i} - \mu_{j}$")
+        # get the legend specifics
+        ax[k, l].plot(0, label=f"Cohen's d = {d_cohen:.2f}\nProb sup = {ps:.2f}",alpha=0)
+        ax[k, l].legend()
+        
+        
 
