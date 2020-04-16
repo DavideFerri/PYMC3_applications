@@ -56,6 +56,7 @@ for G_samples in [G_samples_1,G_samples_2,G_samples_3]:
         for var in ["theta","mu","k"]:
             log.info("the trace for %s with shape %s is: %s", var, trace[var].shape, trace[var])
         az.plot_trace(trace)
+        az.plot_joint(trace,var_names = ["mu","k"], kind = "kde", fill_last = False)
 
     
     
