@@ -67,8 +67,8 @@ for model,trace in zip([nh_model,h_model],[nh_trace,h_trace]):
         
 # --------------------- compare the theta posteriors between hierarchical and non hierarchical model ------------ #
         
-_, ax = az.plot_forest([nh_trace,h_trace],model_names = ["nh","h"],var_names="theta",combined=False,colors="cycle")
-y_lims = ax[0].get_ylim()
-ax[0].vlines(h_trace["mu"].mean(),*y_lims)
-plt.show()    
+axes = az.plot_forest([nh_trace,h_trace],model_names = ["nh","h"],var_names="theta",combined=False,colors="cycle")
+y_lims = axes[0].get_ylim()
+axes[0].vlines(h_trace["mu"].mean(),*y_lims) 
+plt.show()   
     
