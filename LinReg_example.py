@@ -50,8 +50,9 @@ with pm.Model() as linear_model:
     beta = pm.Normal("beta",0,10)
     alpha = pm.Normal("alpha",0,10)
     sigma = pm.HalfNormal("sigma",10)
+    mu = pm.Deterministic("mu",alpha + beta * x)
     # set the likelihood of the observations
-    obs = pm.Normal("obs", mu = alpha + beta * x, sigma = sigma, observed = y)
+    obs = pm.Normal("obs", mu = mu, sigma = sigma, observed = y)
     # inference step 
     trace = pm.sample(2000,tune = 1000)
     
@@ -63,4 +64,44 @@ with linear_model:
     az.plot_joint(trace, kind = "kde", var_names = ["beta","alpha"])
     az.plot_trace(trace)
     az.plot_posterior(trace, var_names = ["alpha","beta"], rope = [-0.05,0.05], credible_interval = 0.9)
+    
+# -------------------- interpreting and visualizing the posterior ----------------- # 
+
+# plot 1
+# replot the true data 
+fig, ax = plt.subplots(figsize = (8,4))
+ax.scatter(x,y)
+# get the mean of the parameters
+alpha_m = trace["alpha"].mean()
+beta_m = trace["beta"].mean()
+# take some draws from the posterior of parameters
+draws = range(0,len(trace["alpha"]),10)
+ax.plot(x,trace["alpha"][draws] + trace["beta"][draws] * x[:,np.newaxis], c = "gray", alpha = 0.5)
+ax.plot(x, alpha_m + beta_m * x, c = "k",label=f'y = {alpha_m:.2f} + {beta_m:.2f} * x')
+ax.set_xlabel("x")
+ax.set_ylabel("y",rotation = 0)
+plt.legend()
+plt.show()
+# plot 2 
+fig, ax = plt.subplots(figsize = (8,4))
+ax.scatter(x,y)
+ax.plot(x, alpha_m + beta_m * x, c = "k",label=f'y = {alpha_m:.2f} + {beta_m:.2f} * x')
+az.plot_hpd(x,trace["mu"],credible_interval = 0.98,color = "k")
+ax.set_xlabel("x")
+ax.set_ylabel("y",rotation = 0)
+plt.legend()
+plt.show()
+# plot 3
+# get the y from the posterior distribution 
+ppc = pm.sample_posterior_predictive(trace,samples = 2000,model = linear_model)
+plt.figure()
+plt.plot(x,y,"b.")
+plt.plot(x,alpha_m + beta_m * x,c = "k",label=f'y = {alpha_m:.2f} + {beta_m:.2f} * x')
+az.plot_hpd(x,ppc["obs"],credible_interval = 0.5, color = "gray")
+az.plot_hpd(x,ppc["obs"],color = "gray")
+plt.xlabel("x")
+plt.ylabel("y")
+plt.show()
+
+
     
