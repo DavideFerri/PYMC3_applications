@@ -103,5 +103,10 @@ plt.xlabel("x")
 plt.ylabel("y")
 plt.show()
 
+# ------------------- get the R squared of our model ------------------------ # 
+
+r_squared = az.r2_score(y, ppc["obs"])
+log.info("The r squared of the model is: %s", r_squared)
+
 
     
